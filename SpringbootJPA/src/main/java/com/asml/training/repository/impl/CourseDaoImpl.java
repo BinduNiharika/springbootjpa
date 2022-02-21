@@ -3,6 +3,7 @@ package com.asml.training.repository.impl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -59,8 +60,13 @@ public class CourseDaoImpl extends AbstarctDao<Course> {
         EntityManager manager = entityManagerFactory.createEntityManager();
         TypedQuery<Course> namedQuery = manager.createNamedQuery("Course.findbyid",Course.class);
         namedQuery.setParameter("courseId",courseId);
-        return Optional.ofNullable(namedQuery.getResultList()).orElse(Collections.emptyList());
-
+        Optional<List<Course>> checkNull = Optional.ofNullable(namedQuery.getResultList());
+        if(checkNull.isPresent()) {
+        	return namedQuery.getResultList();
+        }
+        else {
+        	throw new NotFoundException("course not found");
+        }
 	}
 	
 	/* 
@@ -77,7 +83,7 @@ public class CourseDaoImpl extends AbstarctDao<Course> {
 	 * 
 	 */
 	
-public List<Course> findByCoursePrice(Integer coursePrice) throws NotFoundException {
+public List<Course> findByCoursePrice(Integer coursePrice)  {
 		
 		EntityManager manager=entityManagerFactory.createEntityManager();
     	CriteriaBuilder criteriaBuilder=manager.getCriteriaBuilder();
@@ -85,7 +91,7 @@ public List<Course> findByCoursePrice(Integer coursePrice) throws NotFoundExcept
     	Root<Course> course=criteriaQuery.from(Course.class);
         criteriaQuery.select(course).where(criteriaBuilder.between(course.get("coursePrice"),200,300));
     	TypedQuery<Course> query=manager.createQuery(criteriaQuery);
-    	return Optional.ofNullable(query.getResultList()).orElseThrow( ()-> new NotFoundException("course not found"));
+    	return Optional.ofNullable(query.getResultList()).orElse(Collections.emptyList());
 
 
 	}
